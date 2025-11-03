@@ -4,6 +4,10 @@ import type { Task } from '../types/Task';
 import { Status } from '../types/Status';
 import { getStatusLabel, getStatusIcon, getNextStatus } from '../utils/taskHelpers';
 
+defineOptions({
+  name: 'TaskItem',
+})
+
 interface Props {
   task: Task;
 }
@@ -11,14 +15,43 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  updateStatus: [id: string | number, newStatus: Status];
-  deleteTask: [id: string | number];
-  updateTitle: [id: string | number, newTitle: string];
+  updateStatus: [id: string, newStatus: Status];
+  deleteTask: [id: string];
+  updateTitle: [id: string, newTitle: string];
+  addSubTask: [parentId: string, title: string];
 }>();
 
 const isEditing = ref(false);
 const editedTitle = ref(props.task.title);
 const showMenu = ref(false);
+const showSubTaskForm = ref(false);
+const newSubTaskTitle = ref('');
+const showSubtasks = ref(true);
+
+const handleAddSubTask = () => {
+  showSubTaskForm.value = true;
+  showMenu.value = false;
+};
+
+const handleSubmitSubTask = () => {
+  if (newSubTaskTitle.value.trim()) {
+    emit('addSubTask', props.task.id, newSubTaskTitle.value.trim());
+    newSubTaskTitle.value = '';
+    showSubTaskForm.value = false;
+  }
+};
+
+const handleUpdateSubTaskStatus = (id: string, newStatus: Status) => {
+  emit('updateStatus', id, newStatus);
+};
+
+const handleUpdateSubTaskTitle = (id: string, newTitle: string) => {
+  emit('updateTitle', id, newTitle);
+};
+
+const handleDeleteSubTask = (id: string) => {
+  emit('deleteTask', id);
+};
 
 const handleStatusChange = () => {
   const newStatus = getNextStatus(props.task.status);
@@ -58,21 +91,46 @@ const toggleMenu = () => {
 const closeMenu = () => {
   showMenu.value = false;
 };
+
+const toggleSubtasks = () => {
+  console.log('Toggle subtasks clicked', {
+    hasSubtasks: !!props.task.subtasks,
+    subtasksLength: props.task.subtasks?.length,
+    subtasks: props.task.subtasks,
+    subtasksArray: Array.from(props.task.subtasks || []),
+    fullTask: props.task
+  });
+  if (props.task.subtasks && props.task.subtasks.length > 0) {
+    showSubtasks.value = !showSubtasks.value;
+  }
+};
 </script>
 
 <template>
-  <div
-    class="task-item"
-    :class="`status-${task.status.replace(' ', '-')}`"
-    @click.self="closeMenu"
-  >
-    <div class="task-content">
+  <div class="task-item-wrapper">
+    <div
+      class="task-item"
+      :class="`status-${task.status.replace(' ', '-')}`"
+      @click.self="closeMenu"
+    >
+      <div
+        class="task-content"
+        :class="{ 'has-subtasks': task.subtasks?.length > 0, 'clickable': task.subtasks?.length > 0 }"
+        @click="toggleSubtasks"
+      >
+      <v-icon
+        v-if="task.subtasks?.length > 0"
+        class="expand-icon"
+        :class="{ 'expanded': showSubtasks }"
+      >
+        mdi-chevron-right
+      </v-icon>
       <v-icon class="status-icon">{{ getStatusIcon(task.status) }}</v-icon>
 
       <div v-if="!isEditing" class="task-title">
         {{ task.title }}
       </div>
-      <div v-else class="task-edit">
+      <div v-else class="task-edit" @click.stop>
         <input
           v-model="editedTitle"
           type="text"
@@ -88,10 +146,33 @@ const closeMenu = () => {
         </button>
       </div>
 
-      <span class="task-status">{{ getStatusLabel(task.status) }}</span>
+      <span class="task-status" @click.stop>{{ getStatusLabel(task.status) }}</span>
     </div>
 
-    <div class="task-actions" v-if="!isEditing">
+    <div v-if="showSubTaskForm" class="modal-overlay" @click="showSubTaskForm = false">
+      <div class="modal-content" @click.stop>
+        <h3>Ajouter une sous-tâche</h3>
+        <input
+          v-model="newSubTaskTitle"
+          type="text"
+          placeholder="Titre de la sous-tâche"
+          @keyup.enter="handleSubmitSubTask"
+          autofocus
+        />
+        <div class="modal-actions">
+          <button @click="handleSubmitSubTask" class="btn-confirm">
+            <v-icon>mdi-check</v-icon>
+            <span>Ajouter</span>
+          </button>
+          <button @click="showSubTaskForm = false" class="btn-cancel">
+            <v-icon>mdi-close</v-icon>
+            <span>Annuler</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="task-actions" v-if="!isEditing" @click.stop>
       <button class="btn-menu" @click="toggleMenu">
         <v-icon>mdi-dots-vertical</v-icon>
       </button>
@@ -101,6 +182,10 @@ const closeMenu = () => {
           <button @click="startEdit" class="menu-item">
             <v-icon>mdi-pencil-outline</v-icon>
             <span>Modifier</span>
+          </button>
+          <button @click="handleAddSubTask" class="menu-item">
+            <v-icon>mdi-plus</v-icon>
+            <span>Ajouter une sous-tâche</span>
           </button>
           <button @click="handleStatusChange" class="menu-item">
             <v-icon>mdi-update</v-icon>
@@ -114,18 +199,34 @@ const closeMenu = () => {
       </transition>
     </div>
 
-    <div v-if="showMenu" class="menu-overlay" @click="closeMenu"></div>
+      <div v-if="showMenu" class="menu-overlay" @click="closeMenu"></div>
+    </div>
+
+    <div v-if="task.subtasks?.length > 0 && showSubtasks" class="subtasks">
+      <TaskItem
+        v-for="subTask in task.subtasks"
+        :key="subTask.id"
+        :task="subTask"
+        @update-status="handleUpdateSubTaskStatus"
+        @delete-task="handleDeleteSubTask"
+        @update-title="handleUpdateSubTaskTitle"
+        @add-sub-task="(parentId, title) => $emit('addSubTask', parentId, title)"
+      />
+    </div>
   </div>
 </template>
 
 <style scoped>
+.task-item-wrapper {
+  margin-bottom: 0.75rem;
+}
+
 .task-item {
   position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  margin-bottom: 0.75rem;
   border-radius: 8px;
   border-left: 4px solid;
   background: white;
@@ -154,6 +255,25 @@ const closeMenu = () => {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.task-content.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.task-content.clickable:hover {
+  opacity: 0.9;
+}
+
+.expand-icon {
+  font-size: 1.5rem;
+  color: #666;
+  transition: transform 0.3s ease;
+}
+
+.expand-icon.expanded {
+  transform: rotate(90deg);
 }
 
 .status-icon {
@@ -389,5 +509,101 @@ const closeMenu = () => {
     font-size: 0.9rem;
     padding: 0.4rem;
   }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 1rem 0;
+  border: 2px solid #e9ecef;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.btn-confirm {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-confirm:hover {
+  background: #218838;
+}
+
+.btn-cancel {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-cancel:hover {
+  background: #c82333;
+}
+
+.subtasks {
+  margin-top: 0.5rem;
+  margin-left: 2rem;
+  padding-left: 1rem;
+  border-left: 3px solid #e9ecef;
+  position: relative;
+}
+
+.subtasks::before {
+  content: '';
+  position: absolute;
+  left: -3px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, #06e3a6 0%, #e9ecef 100%);
+}
+
+.subtasks .task-item-wrapper:last-child {
+  margin-bottom: 0;
 }
 </style>

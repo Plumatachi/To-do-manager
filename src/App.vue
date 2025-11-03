@@ -7,7 +7,7 @@ import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
 import type { Status } from './types/Status.ts';
 
-const { tasks, addTask, updateStatus, deleteTask, updateTitle } = useTasks();
+const { tasks, addTask, updateStatus, deleteTask, updateTitle, addSubTask } = useTasks();
 const formVisible = ref(false);
 
 const toggleForm = () => {
@@ -19,6 +19,10 @@ const handleAddTask = (title: string, status: Status) => {
   if (window.innerWidth <= 768) {
     formVisible.value = false;
   }
+};
+
+const handleAddSubTask = (parentId: string, title: string) => {
+  addSubTask(parentId, title);
 };
 </script>
 
@@ -32,6 +36,7 @@ const handleAddTask = (title: string, status: Status) => {
         @update-status="updateStatus"
         @delete-task="deleteTask"
         @update-title="updateTitle"
+        @add-sub-task="handleAddSubTask"
       />
     </div>
 
