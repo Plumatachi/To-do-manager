@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import {ref} from 'vue';
+import {ref, inject} from 'vue';
 import { Status } from '../types/Status';
 
 const emit = defineEmits<{
   addTask: [title: string, status: Status];
 }>();
+
+const sounds = inject<any>('sounds');
 
 const title = ref('');
 const status = ref<Status>(Status.TODO);
@@ -13,6 +15,7 @@ const errorMessage = ref('');
 const validateForm = (): boolean => {
   if (!title.value.trim()) {
     errorMessage.value = 'Le titre est obligatoire';
+    sounds?.playError();
     return false;
   }
   errorMessage.value = '';
