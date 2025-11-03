@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import type { Status } from '../types/Status';
+import {ref} from 'vue';
+import { Status } from '../types/Status';
 
 const emit = defineEmits<{
   addTask: [title: string, status: Status];
 }>();
 
 const title = ref('');
-const status = ref<Status>('to do');
+const status = ref<Status>(Status.TODO);
 const errorMessage = ref('');
 
 const validateForm = (): boolean => {
@@ -23,14 +23,13 @@ const handleSubmit = () => {
   if (validateForm()) {
     emit('addTask', title.value.trim(), status.value);
     title.value = '';
-    status.value = 'to do';
+    status.value = Status.TODO;
   }
 };
 </script>
 
 <template>
   <div class="task-form">
-    <h2>Ajouter une tâche</h2>
     <form @submit.prevent="handleSubmit">
       <div class="form-group">
         <label for="title">Titre :</label>

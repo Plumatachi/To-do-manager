@@ -2,7 +2,8 @@
 import { ref, computed } from 'vue';
 import TaskItem from './TaskItem.vue';
 import type { Task } from '../types/Task';
-import type { Status } from '../types/Status';
+import { Status } from '../types/Status';
+import { countTasksByStatus } from '../utils/taskHelpers';
 
 interface Props {
   tasks: Task[];
@@ -28,9 +29,9 @@ const filteredTasks = computed(() => {
 const taskCount = computed(() => {
   return {
     total: props.tasks.length,
-    'to do': props.tasks.filter(t => t.status === 'to do').length,
-    'in progress': props.tasks.filter(t => t.status === 'in progress').length,
-    'done': props.tasks.filter(t => t.status === 'done').length
+    todo: countTasksByStatus(props.tasks, Status.TODO),
+    inProgress: countTasksByStatus(props.tasks, Status.IN_PROGRESS),
+    done: countTasksByStatus(props.tasks, Status.DONE)
   };
 });
 
@@ -53,9 +54,9 @@ const handleUpdateTitle = (id: string | number, newTitle: string) => {
       <h2>Mes tâches ({{ taskCount.total }})</h2>
 
       <div class="task-stats">
-        <span class="stat stat-todo">À faire: {{ taskCount['to do'] }}</span>
-        <span class="stat stat-progress">En cours: {{ taskCount['in progress'] }}</span>
-        <span class="stat stat-done">Terminé: {{ taskCount['done'] }}</span>
+        <span class="stat stat-todo">À faire: {{ taskCount.todo }}</span>
+        <span class="stat stat-progress">En cours: {{ taskCount.inProgress }}</span>
+        <span class="stat stat-done">Terminé: {{ taskCount.done }}</span>
       </div>
 
       <div class="filter-buttons">
@@ -67,22 +68,22 @@ const handleUpdateTitle = (id: string | number, newTitle: string) => {
           Toutes
         </button>
         <button
-          @click="filterStatus = 'to do'"
-          :class="{ active: filterStatus === 'to do' }"
+          @click="filterStatus = Status.TODO"
+          :class="{ active: filterStatus === Status.TODO }"
           class="filter-btn"
         >
           À faire
         </button>
         <button
-          @click="filterStatus = 'in progress'"
-          :class="{ active: filterStatus === 'in progress' }"
+          @click="filterStatus = Status.IN_PROGRESS"
+          :class="{ active: filterStatus === Status.IN_PROGRESS }"
           class="filter-btn"
         >
           En cours
         </button>
         <button
-          @click="filterStatus = 'done'"
-          :class="{ active: filterStatus === 'done' }"
+          @click="filterStatus = Status.DONE"
+          :class="{ active: filterStatus === Status.DONE }"
           class="filter-btn"
         >
           Terminé

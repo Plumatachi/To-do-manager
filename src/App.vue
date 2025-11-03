@@ -5,6 +5,7 @@ import TaskForm from './components/TaskForm.vue';
 import TaskList from './components/TaskList.vue';
 import Header from "@/components/Header.vue";
 import Footer from "@/components/Footer.vue";
+import type { Status } from './types/Status.ts';
 
 const { tasks, addTask, updateStatus, deleteTask, updateTitle } = useTasks();
 const formVisible = ref(false);
@@ -12,89 +13,79 @@ const formVisible = ref(false);
 const toggleForm = () => {
   formVisible.value = !formVisible.value;
 }
+
+const handleAddTask = (title: string, status: Status) => {
+  addTask(title, status);
+  if (window.innerWidth <= 768) {
+    formVisible.value = false;
+  }
+};
 </script>
 
 <template>
-  <Header></Header>
+  <Header @toggle-menu="toggleForm" :menu-open="formVisible"></Header>
 
-  <div class="container">
-    <TaskList
-      :tasks="tasks"
-      @update-status="updateStatus"
-      @delete-task="deleteTask"
-      @update-title="updateTitle"
-    />
-
-    <div class="sidebar-container">
-      <button
-        class="btn-toggle"
-        @click="toggleForm"
-        :class="{ 'is-open': formVisible }"
-      >
-        <v-icon>{{ formVisible ? 'mdi-chevron-right' : 'mdi-chevron-left' }}</v-icon>
-      </button>
-
-      <transition name="slide-fade">
-        <div v-if="formVisible" class="sidebar">
-          <TaskForm @add-task="addTask" />
-        </div>
-      </transition>
+  <div class="main-container" :class="{ 'form-open': formVisible }">
+    <div class="container">
+      <TaskList
+        :tasks="tasks"
+        @update-status="updateStatus"
+        @delete-task="deleteTask"
+        @update-title="updateTitle"
+      />
     </div>
+
+    <transition name="slide-fade">
+      <div v-if="formVisible" class="sidebar">
+        <div class="sidebar-header">
+          <h2>Ajouter une tâche</h2>
+        </div>
+        <TaskForm @add-task="handleAddTask" />
+      </div>
+    </transition>
   </div>
 
   <Footer></Footer>
 </template>
 
 <style scoped>
+.main-container {
+  display: flex;
+  position: relative;
+  min-height: calc(100vh - 200px);
+}
+
 .container {
   flex: 1;
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
-  transition: margin-right 0.3s ease;
-}
-
-.sidebar-container {
-  position: fixed;
-  right: 0;
-  top: 80px;
-  height: calc(100vh - 160px);
-  z-index: 100;
-}
-
-.btn-toggle {
-  position: absolute;
-  left: -48px;
-  top: 20px;
-  width: 48px;
-  height: 48px;
-  background: #06e3a6;
-  border: none;
-  border-radius: 24px 0 0 24px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
-  color: white;
-}
-
-.btn-toggle:hover {
-  background: #147358;
-  transform: translateX(-4px);
-}
-
-.btn-toggle.is-open {
-  left: -48px;
 }
 
 .sidebar {
+  position: fixed;
+  right: 0;
+  top: 6.8rem;
   width: 400px;
-  height: 100%;
+  height: calc(100vh - 160px);
+  background: white;
   box-shadow: -4px 0 16px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
   overflow-y: auto;
   padding: 2rem;
+  z-index: 1000;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-header h2 {
+  margin: 0;
 }
 
 .slide-fade-enter-active {
@@ -140,19 +131,60 @@ const toggleForm = () => {
 
 @media (max-width: 1200px) {
   .sidebar {
+    width: 350px;
+  }
+
+  .container {
+    max-width: 700px;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .sidebar {
     width: 320px;
+  }
+
+  .container {
+    max-width: 600px;
+    padding: 1.5rem;
   }
 }
 
 @media (max-width: 768px) {
-  .sidebar {
-    width: 100vw;
+  .main-container.form-open .container {
+    display: none;
   }
 
-  .btn-toggle {
-    left: -40px;
-    width: 40px;
-    height: 40px;
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    padding: 2rem;
+    z-index: 999;
+  }
+
+  .container {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    padding: 0.75rem;
+    padding-top: 70px;
+  }
+
+  .sidebar-header {
+    margin-bottom: 1rem;
+  }
+
+  .container {
+    padding: 0.75rem;
   }
 }
 </style>
