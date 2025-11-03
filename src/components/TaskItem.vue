@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, inject } from 'vue';
 import type { Task } from '../types/Task';
 import { Status } from '../types/Status';
 import { getStatusLabel, getStatusIcon, getNextStatus } from '../utils/taskHelpers';
@@ -21,6 +21,8 @@ const emit = defineEmits<{
   addSubTask: [parentId: string, title: string];
 }>();
 
+const sounds = inject<any>('sounds');
+
 const isEditing = ref(false);
 const editedTitle = ref(props.task.title);
 const showMenu = ref(false);
@@ -31,6 +33,7 @@ const showSubtasks = ref(true);
 const handleAddSubTask = () => {
   showSubTaskForm.value = true;
   showMenu.value = false;
+  sounds?.playClick();
 };
 
 const handleSubmitSubTask = () => {
@@ -38,6 +41,9 @@ const handleSubmitSubTask = () => {
     emit('addSubTask', props.task.id, newSubTaskTitle.value.trim());
     newSubTaskTitle.value = '';
     showSubTaskForm.value = false;
+    sounds?.playSuccess();
+  } else {
+    sounds?.playError();
   }
 };
 
@@ -57,11 +63,13 @@ const handleStatusChange = () => {
   const newStatus = getNextStatus(props.task.status);
   emit('updateStatus', props.task.id, newStatus);
   showMenu.value = false;
+  sounds?.playStatusChange();
 };
 
 const handleDelete = () => {
   if (confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
     emit('deleteTask', props.task.id);
+    sounds?.playDelete();
   }
   showMenu.value = false;
 };
@@ -70,22 +78,28 @@ const startEdit = () => {
   isEditing.value = true;
   editedTitle.value = props.task.title;
   showMenu.value = false;
+  sounds?.playEdit();
 };
 
 const saveEdit = () => {
   if (editedTitle.value.trim()) {
     emit('updateTitle', props.task.id, editedTitle.value.trim());
     isEditing.value = false;
+    sounds?.playSuccess();
+  } else {
+    sounds?.playError();
   }
 };
 
 const cancelEdit = () => {
   isEditing.value = false;
   editedTitle.value = props.task.title;
+  sounds?.playClick();
 };
 
 const toggleMenu = () => {
   showMenu.value = !showMenu.value;
+  sounds?.playClick();
 };
 
 const closeMenu = () => {
@@ -93,15 +107,9 @@ const closeMenu = () => {
 };
 
 const toggleSubtasks = () => {
-  console.log('Toggle subtasks clicked', {
-    hasSubtasks: !!props.task.subtasks,
-    subtasksLength: props.task.subtasks?.length,
-    subtasks: props.task.subtasks,
-    subtasksArray: Array.from(props.task.subtasks || []),
-    fullTask: props.task
-  });
   if (props.task.subtasks && props.task.subtasks.length > 0) {
     showSubtasks.value = !showSubtasks.value;
+    sounds?.playToggle();
   }
 };
 </script>
