@@ -12,9 +12,10 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  updateStatus: [id: string | number, newStatus: Status];
-  deleteTask: [id: string | number];
-  updateTitle: [id: string | number, newTitle: string];
+  updateStatus: [id: string, newStatus: Status];
+  deleteTask: [id: string];
+  updateTitle: [id: string, newTitle: string];
+  addSubTask: [parentId: string, title: string];
 }>();
 
 const filterStatus = ref<Status | 'all'>('all');
@@ -35,16 +36,20 @@ const taskCount = computed(() => {
   };
 });
 
-const handleUpdateStatus = (id: string | number, newStatus: Status) => {
+const handleUpdateStatus = (id: string, newStatus: Status) => {
   emit('updateStatus', id, newStatus);
 };
 
-const handleDeleteTask = (id: string | number) => {
+const handleDeleteTask = (id: string) => {
   emit('deleteTask', id);
 };
 
-const handleUpdateTitle = (id: string | number, newTitle: string) => {
+const handleUpdateTitle = (id: string, newTitle: string) => {
   emit('updateTitle', id, newTitle);
+};
+
+const handleAddSubTask = (parentId: string, title: string) => {
+  emit('addSubTask', parentId, title);
 };
 </script>
 
@@ -108,6 +113,7 @@ const handleUpdateTitle = (id: string | number, newTitle: string) => {
         @update-status="handleUpdateStatus"
         @delete-task="handleDeleteTask"
         @update-title="handleUpdateTitle"
+        @add-sub-task="handleAddSubTask"
       />
     </div>
   </div>

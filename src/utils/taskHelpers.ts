@@ -1,4 +1,5 @@
 import { Status } from '../types/Status';
+import type { Task } from '@/types/Task.ts'
 
 export const getStatusLabel = (status: Status): string => {
   const labels: Record<Status, string> = {
@@ -25,6 +26,6 @@ export const getNextStatus = (currentStatus: Status): Status => {
   return statusOrder[nextIndex] as Status;
 };
 
-export const countTasksByStatus = (tasks: any[], status: Status): number => {
+export const countTasksByStatus = (tasks: Task[], status: Status): number => {
   return tasks.filter(t => t.status === status).length;
 };
