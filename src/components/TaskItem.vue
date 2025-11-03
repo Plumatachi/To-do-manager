@@ -210,17 +210,19 @@ const toggleSubtasks = () => {
       <div v-if="showMenu" class="menu-overlay" @click="closeMenu"></div>
     </div>
 
-    <div v-if="task.subtasks?.length > 0 && showSubtasks" class="subtasks">
-      <TaskItem
-        v-for="subTask in task.subtasks"
-        :key="subTask.id"
-        :task="subTask"
-        @update-status="handleUpdateSubTaskStatus"
-        @delete-task="handleDeleteSubTask"
-        @update-title="handleUpdateSubTaskTitle"
-        @add-sub-task="(parentId, title) => $emit('addSubTask', parentId, title)"
-      />
-    </div>
+    <transition name="menu-fade">
+      <div v-if="task.subtasks?.length > 0 && showSubtasks" class="subtasks">
+        <TaskItem
+          v-for="subTask in task.subtasks"
+          :key="subTask.id"
+          :task="subTask"
+          @update-status="handleUpdateSubTaskStatus"
+          @delete-task="handleDeleteSubTask"
+          @update-title="handleUpdateSubTaskTitle"
+          @add-sub-task="(parentId, title) => $emit('addSubTask', parentId, title)"
+        />
+      </div>
+    </transition>
   </div>
 </template>
 

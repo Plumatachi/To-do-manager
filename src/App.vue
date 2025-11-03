@@ -14,11 +14,9 @@ const sounds = useSounds();
 const formVisible = ref(false);
 const themeSelectorVisible = ref(false);
 
-// Fournir les sons à tous les composants enfants
 provide('sounds', sounds);
 
 onMounted(() => {
-  // Démarrer la musique de fond après un court délai
   setTimeout(() => {
     sounds.playBackgroundMusic();
   }, 500);

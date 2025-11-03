@@ -96,16 +96,22 @@ const handleAddSubTask = (parentId: string, title: string) => {
       </div>
     </div>
 
-    <div v-if="filteredTasks.length === 0" class="empty-state">
-      <p v-if="props.tasks.length === 0">
-        Aucune tâche pour le moment. Commencez par en ajouter une !
-      </p>
-      <p v-else>
-        Aucune tâche avec ce filtre.
-      </p>
-    </div>
+    <transition name="fade">
+      <div v-if="filteredTasks.length === 0" class="empty-state">
+        <p v-if="props.tasks.length === 0">
+          Aucune tâche pour le moment. Commencez par en ajouter une !
+        </p>
+        <p v-else>
+          Aucune tâche avec ce filtre.
+        </p>
+      </div>
+    </transition>
 
-    <div v-else class="tasks-container">
+    <transition-group
+      name="task-list"
+      tag="div"
+      class="tasks-container"
+    >
       <TaskItem
         v-for="task in filteredTasks"
         :key="task.id"
@@ -115,7 +121,7 @@ const handleAddSubTask = (parentId: string, title: string) => {
         @update-title="handleUpdateTitle"
         @add-sub-task="handleAddSubTask"
       />
-    </div>
+    </transition-group>
   </div>
 </template>
 
@@ -205,5 +211,39 @@ h2 {
 .tasks-container {
   display: flex;
   flex-direction: column;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.task-list-enter-active {
+  transition: all 0.4s ease;
+}
+
+.task-list-leave-active {
+  transition: all 0.4s ease;
+  position: absolute;
+  width: 100%;
+}
+
+.task-list-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.task-list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.task-list-move {
+  transition: transform 0.4s ease;
 }
 </style>
