@@ -19,6 +19,15 @@ const SOUND_THEMES = {
     toggle: '/sounds/retro/toggle.wav',
     error: '/sounds/retro/error.wav',
     background: '/sounds/retro/background.wav'
+  },
+  chill: {
+    click: '/sounds/chill/click.wav',
+    success: '/sounds/chill/success.wav',
+    delete: '/sounds/chill/delete.wav',
+    statusChange: '/sounds/chill/statusChange.mp3',
+    toggle: '/sounds/chill/toggle.wav',
+    error: '/sounds/chill/error.wav',
+    background: '/sounds/chill/background.wav'
   }
 };
 

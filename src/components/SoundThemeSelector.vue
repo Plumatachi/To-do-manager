@@ -15,6 +15,12 @@ const themeInfo = {
     icon: 'mdi-gamepad-variant',
     description: 'Sons arcade vintage',
     color: '#ef4444'
+  },
+  chill: {
+    name: 'Chill',
+    icon: 'mdi-tea',
+    description: 'Ambiance relaxante et douce',
+    color: '#f3d1ab'
   }
 };
 
